@@ -16,28 +16,28 @@ void UI() {
     .setPosition(190, 50)
     .setSize(20, 200)
     .setRange(110, 196)
-    .setValue(baseFreqs[0])
+    .setValue(baseFreqs[0] * freqRatios[2])
     .setLabel("Head");
 
   sliderFreq2 = p5.addSlider("footPositionSlider")
     .setPosition(260, 50)
     .setSize(20, 200)
     .setRange(220, 415)
-    .setValue(baseFreqs[1])
+    .setValue(baseFreqs[1] * freqRatios[2])
     .setLabel("Foot");
 
   sliderFreq3 = p5.addSlider("bodyAngleSlider")
     .setPosition(330, 50)
     .setSize(20, 200)
     .setRange(440, 785)
-    .setValue(baseFreqs[2])
+    .setValue(baseFreqs[2] * freqRatios[2])
     .setLabel("Body");
 
   sliderFreq4 = p5.addSlider("hipPositionSlider")
     .setPosition(400, 50)
     .setSize(20, 200)
     .setRange(880, 1570)
-    .setValue(baseFreqs[3])
+    .setValue(baseFreqs[3] * freqRatios[2])
     .setLabel("Hip");
 }
 
