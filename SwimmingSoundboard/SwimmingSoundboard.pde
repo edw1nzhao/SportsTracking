@@ -27,10 +27,10 @@ Slider sliderFreq4;
 float[] freqRatios;
 float[] baseFreqs;
 
-int currentFreq1 = 0;
-int currentFreq2 = 0;
-int currentFreq3 = 0;
-int currentFreq4 = 0;
+int currentFreq1 = 3;
+int currentFreq2 = 3;
+int currentFreq3 = 3;
+int currentFreq4 = 3;
 
 
 void setup() {
