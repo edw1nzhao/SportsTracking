@@ -6,31 +6,41 @@ ControlP5 p5;
 
 //Audio Related Variables
 AudioContext ac; 
+
 float baseFreq = 440.0;
+
 Gain g;
+Gain sineGain;
+Gain sineGainFreq3;
+
 
 WavePlayer sine1;
 WavePlayer sine2;
 WavePlayer sine3;
-WavePlayer sine4;
+
+Glide clickGlide;
 
 Glide glideFreq1;
 Glide glideFreq2;
 Glide glideFreq3;
-Glide glideFreq4;
 
+Slider sliderClickInterval;
 Slider sliderFreq1;
 Slider sliderFreq2;
 Slider sliderFreq3;
-Slider sliderFreq4;
 
 float[] freqRatios;
 float[] baseFreqs;
 
+float clickInterval = 400;
 int currentFreq1 = 2;
 int currentFreq2 = 2;
 int currentFreq3 = 2;
-int currentFreq4 = 2;
+
+
+SamplePlayer click = null;
+
+Clock clock;
 
 
 void setup() {
@@ -41,17 +51,26 @@ void setup() {
   baseFreqs = new float[]{110, 220, 440, 880};
   
   sineSetup();
-  
-  g = new Gain(ac, 1, 0.5);
 
-  g.addInput(sine1);
-  g.addInput(sine2);
-  g.addInput(sine3);
-  g.addInput(sine4);
+  sineGainFreq3 = new Gain(ac, 1, .5);
+  g = new Gain(ac, 1, 0.5);
+  sineGain = new Gain(ac, 1, .7);
+
+  clockSetup();
+  
+  sineGainFreq3.addInput(sine3);
+  
+  sineGain.addInput(sine1);
+  sineGain.addInput(sine2);
+  sineGain.addInput(sineGainFreq3);
+
+  g.addInput(click);
+  g.addInput(sineGain);
   
   g.pause(true);
   
   ac.out.addInput(g);
+  ac.out.addDependent(clock);
   ac.start();
   
   UI();
@@ -65,56 +84,58 @@ void keyPressed() {
   int freqLength = freqRatios.length - 1;
   float newFreq;
   if (key == 'q') {
-    currentFreq1 = Math.min(freqLength, currentFreq1 + 1);
-    newFreq = baseFreqs[0] * freqRatios[currentFreq1];
-    sliderFreq1.setValue(newFreq);
-    glideFreq1.setValue(newFreq);
+    clickInterval = Math.min(1600, clickInterval * 2);
+    //newFreq = baseFreqs[0] * freqRatios[currentFreq1];
+    sliderClickInterval.setValue(clickInterval);
+    clickGlide.setValue(clickInterval);
+    //println(glideFreq1.getValue());
 
 
   } else if (key == 'a') {
-    currentFreq1 = Math.max(0, currentFreq1 - 1);
-    newFreq = baseFreqs[0] * freqRatios[currentFreq1];
+    clickInterval = Math.max(100, clickInterval / 2);
+    //newFreq = baseFreqs[0] * freqRatios[currentFreq1];
+    sliderClickInterval.setValue(clickInterval);
+    clickGlide.setValue(clickInterval);
+    //println(glideFreq1.getValue());
+
+
+  } else if (key == 'w') {
+    currentFreq1 = Math.min(freqLength, currentFreq1 + 1);
+    newFreq = baseFreqs[1] * freqRatios[currentFreq1];
     glideFreq1.setValue(newFreq);
     sliderFreq1.setValue(newFreq);
 
 
-  } else if (key == 'w') {
-    currentFreq2 = Math.min(freqLength, currentFreq2 + 1);
-    newFreq = baseFreqs[1] * freqRatios[currentFreq2];
-    glideFreq2.setValue(newFreq);
-    sliderFreq2.setValue(newFreq);
-
-
   } else if (key == 's') {
-    currentFreq2 = Math.max(0, currentFreq2 - 1);
-    newFreq = baseFreqs[1] * freqRatios[currentFreq2];
-    glideFreq2.setValue(newFreq);
-    sliderFreq2.setValue(newFreq);
+    currentFreq1 = Math.max(0, currentFreq1 - 1);
+    newFreq = baseFreqs[1] * freqRatios[currentFreq1];
+    glideFreq1.setValue(newFreq);
+    sliderFreq1.setValue(newFreq);
 
 
   } else if (key == 'e') {
-    currentFreq3 = Math.min(freqLength, currentFreq3 + 1);
-    newFreq = baseFreqs[2] * freqRatios[currentFreq3];
-    glideFreq3.setValue(newFreq);
-    sliderFreq3.setValue(newFreq);
+    currentFreq2 = Math.min(freqLength, currentFreq2 + 1);
+    newFreq = baseFreqs[2] * freqRatios[currentFreq2];
+    glideFreq2.setValue(newFreq);
+    sliderFreq2.setValue(newFreq);
 
 
   } else if (key == 'd') {
-    currentFreq3 = Math.max(0, currentFreq3 - 1);
-    newFreq = baseFreqs[2] * freqRatios[currentFreq3];
+    currentFreq2 = Math.max(0, currentFreq2 - 1);
+    newFreq = baseFreqs[2] * freqRatios[currentFreq2];
+    glideFreq2.setValue(newFreq);
+    sliderFreq2.setValue(newFreq);
+
+  } else if (key == 'r') {
+    currentFreq3 = Math.min(freqLength, currentFreq3 + 1);
+    newFreq = baseFreqs[3] * freqRatios[currentFreq3];
     glideFreq3.setValue(newFreq);
     sliderFreq3.setValue(newFreq);
 
-  } else if (key == 'r') {
-    currentFreq4 = Math.min(freqLength, currentFreq4 + 1);
-    newFreq = baseFreqs[3] * freqRatios[currentFreq4];
-    glideFreq4.setValue(newFreq);
-    sliderFreq4.setValue(newFreq);
-
   } else if (key == 'f') {
-    currentFreq4 = Math.max(0, currentFreq4 - 1);
-    newFreq = baseFreqs[3] * freqRatios[currentFreq4];
-    glideFreq4.setValue(newFreq);
-    sliderFreq4.setValue(newFreq);
+    currentFreq3 = Math.max(0, currentFreq3 - 1);
+    newFreq = baseFreqs[3] * freqRatios[currentFreq3];
+    glideFreq3.setValue(newFreq);
+    sliderFreq3.setValue(newFreq);
   }
 }
